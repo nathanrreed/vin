@@ -11,9 +11,12 @@ def main(stdscr, file):
     
     
     lines = []
-    with open(file, 'r') as f:
-        for line in f:
-            lines.append(line.replace('\t', '    ').replace('\r', '\n').replace('\n\n', '\n'))
+    if os.path.exists(file):
+        with open(file, 'r') as f:
+            for line in f:
+                lines.append(line.replace('\t', '    ').replace('\r', '\n').replace('\n\n', '\n'))
+    else:
+        lines.append('')
     
     y = 0
     posy = 0
@@ -23,11 +26,15 @@ def main(stdscr, file):
     quit = False
     while not quit:
         for i in range(rows - 1):
-            if i > len(lines):
+            if i >= len(lines):
                 stdscr.addstr(i, 0, '~' + ' ' * (cols - 2))
             else:
                 stdscr.addstr(i, 0, lines[i + posy] + ' ' * (cols - 1 - len(lines[i + posy])))
         stdscr.addstr(rows - 1, 0, mode + ' ' * (cols - 1 - len(mode)))
+        if x < 0: x = 0
+        elif x >= cols - 1: x = cols - 1
+        if y < 0:y = 0
+        elif y >= rows - 1: y = rows - 2
         stdscr.move(y, x)
         stdscr.refresh()
 
@@ -39,10 +46,11 @@ def main(stdscr, file):
             posy = 0
             rows, cols = stdscr.getmaxyx()
         elif key == curses.KEY_DOWN:
-            if posy + rows < len(lines) and posy + y > rows // 3 * 2:
-                posy += 1
-            elif y < rows - 2:
-                y += 1
+            if posy + y < len(lines) - 1:
+                if posy + rows < len(lines) and posy + y > rows // 3 * 2:
+                    posy += 1
+                elif y < rows - 2:
+                    y += 1
         elif key == curses.KEY_UP:
             if posy > 0 and y < rows // 3:
                 posy -= 1
@@ -54,7 +62,7 @@ def main(stdscr, file):
         elif key == curses.KEY_LEFT:
             if x > 0:
                 x -= 1
-        elif key == 27:
+        elif key == 27: #ESC
             mode = 'None'
         elif key == curses.KEY_HOME:
             x = 0
@@ -87,8 +95,8 @@ def main(stdscr, file):
                     lines[posy + y] = lines[posy + y][0:x - 1] + lines[posy + y][x:]
                     x -= 1
                 elif posy + y > 0:
-                    x = len(lines[posy + y - 1]) - 1
-                    lines[posy + y - 1] = lines[posy + y - 1][0:-1] + lines[posy + y]
+                    x = len(lines[posy + y - 1])
+                    lines[posy + y - 1] = lines[posy + y - 1][0:] + lines[posy + y]
                     lines.pop(posy + y)
                     y -= 1
             elif key == curses.KEY_DC:
@@ -124,8 +132,5 @@ if len(sys.argv) != 2:
     sys.exit()
 
 file = sys.argv[1]
-if not os.path.exists(file):
-    print('File not found')
-    sys.exit()
 curses.wrapper(main, file)
 
