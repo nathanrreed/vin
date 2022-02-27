@@ -29,8 +29,8 @@ def checkY(rows):
         y = y - posy
 
 def padStr(size, *strings):
-    strings = [str(string) for string in strings]
-    endStr = ' '.join(strings[1:])
+    strings = [str(item) for item in strings]
+    endStr = ''.join(strings[1:])
     string = strings[0] + ' ' * (size - len(strings[0] + endStr)) + endStr
     return string
 
@@ -71,7 +71,7 @@ def main(stdscr, file):
                 stdscr.addstr(i, 0, '~' + ' ' * (cols - 2))
             else:
                 stdscr.addstr(i, 0,  padStr(cols - 1, lines[i + posy][posx:posx + cols - 1]))
-        stdscr.addstr(rows - 1, 0, padStr(cols - 1, modeStr(mode), x + posx, y + posy))
+        stdscr.addstr(rows - 1, 0, padStr(cols - 1, modeStr(mode), x + posx, ', ', y + posy))
         stdscr.move(y, x)
         stdscr.refresh()
 
@@ -81,7 +81,10 @@ def main(stdscr, file):
             x = 0
             y = 0
             posy = 0
+            posx = 0
             rows, cols = stdscr.getmaxyx()
+            stdscr.clear()
+            continue
         elif key == curses.KEY_DOWN:
             if posy + y < len(lines) - 1:
                 if posy + rows < len(lines) and posy + y > rows // 3 * 2:
