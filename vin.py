@@ -48,6 +48,7 @@ def main(stdscr, file):
     mode = 'None'
     quit = False
     curses.set_escdelay(50)
+    curses.raw()
     stdscr.clear()
     
     curses.curs_set(1)
