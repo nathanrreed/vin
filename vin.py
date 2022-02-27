@@ -21,6 +21,7 @@ def main(stdscr, file):
     y = 0
     posy = 0
     x = 0
+    posx = 0
     key = ''
     mode = 'None'
     quit = False
@@ -29,7 +30,7 @@ def main(stdscr, file):
             if i >= len(lines):
                 stdscr.addstr(i, 0, '~' + ' ' * (cols - 2))
             else:
-                stdscr.addstr(i, 0, lines[i + posy] + ' ' * (cols - 1 - len(lines[i + posy])))
+                stdscr.addstr(i, 0, lines[i + posy][posx:] + ' ' * (cols - 1 - len(lines[i + posy])))
         stdscr.addstr(rows - 1, 0, mode + ' ' * (cols - 1 - len(mode)))
         if x < 0: x = 0
         elif x >= cols - 1: x = cols - 1
@@ -51,6 +52,7 @@ def main(stdscr, file):
                     posy += 1
                 elif y < rows - 2:
                     y += 1
+               
         elif key == curses.KEY_UP:
             if posy > 0 and y < rows // 3:
                 posy -= 1
@@ -58,16 +60,25 @@ def main(stdscr, file):
                 y -= 1
         elif key == curses.KEY_RIGHT:
             if x < cols and x < len(lines[posy + y]) - 1:
-                x += 1
+                if posx + cols < len(lines[posy + y]) and posx + x > cols // 3 * 2:
+                    posx += 1
+                elif x < cols - 1:
+                    x += 1
         elif key == curses.KEY_LEFT:
-            if x > 0:
+            if posx > 0 and x < cols // 3:
+                posx -= 1
+            elif x > 0:
                 x -= 1
         elif key == 27: #ESC
             mode = 'None'
         elif key == curses.KEY_HOME:
+            posx = 0
             x = 0
         elif key == curses.KEY_END:
             x = len(lines[posy + y]) - 1
+            if x > cols:
+                posx = x - cols + 1
+                x = cols - 1
         else:
             cont = False
             
@@ -88,6 +99,7 @@ def main(stdscr, file):
                                 w.write(line)
                 if 'q' in mode:
                     quit = True
+                mode = 'None'
             mode += chr(key)
         elif mode == 'insert':
             if key == curses.KEY_BACKSPACE:
@@ -128,7 +140,7 @@ def main(stdscr, file):
             
 
 if len(sys.argv) != 2:
-    print('Filename not supplied properly')
+    print('Filename must be included')
     sys.exit()
 
 file = sys.argv[1]
